@@ -1,9 +1,14 @@
 import "server-only";
 import { cookies } from "next/headers";
 import type {
+  AdminAuditLogItem,
   AdminCourseListItem,
+  AdminExamListItem,
+  AdminNotificationItem,
+  AdminQuestionBankItem,
   AdminReportOverview,
   AdminTrainingPlanListItem,
+  AdminWrongAnswerAnalysisItem,
   CourseDetail,
   CourseListItem,
   DashboardSummary,
@@ -13,6 +18,7 @@ import type {
   HealthCheckResponse,
   KnowledgeArticleDetail,
   KnowledgeArticleListItem,
+  LearningPathListItem,
   LessonDetail,
   MyProgressOverview,
   UserProfile,
@@ -49,6 +55,20 @@ async function fetchApi<T>(
   } catch {
     return null;
   }
+}
+
+function withQuery(
+  path: string,
+  query: Record<string, string | undefined>
+): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value && value.trim().length > 0) {
+      searchParams.set(key, value.trim());
+    }
+  }
+  const serialized = searchParams.toString();
+  return serialized ? `${path}?${serialized}` : path;
 }
 
 export function getHealthStatus() {
@@ -99,12 +119,68 @@ export function getMyProgress() {
   return fetchApi<MyProgressOverview>("/my-progress");
 }
 
+export function getLearningPaths() {
+  return fetchApi<LearningPathListItem[]>("/learning-paths");
+}
+
 export function getAdminReportOverview() {
   return fetchApi<AdminReportOverview>("/admin/reports/overview");
 }
 
+export function getAdminReportOverviewWithFilter(filters: {
+  organizationName?: string;
+  positionName?: string;
+}) {
+  return fetchApi<AdminReportOverview>(
+    withQuery("/admin/reports/overview", filters)
+  );
+}
+
+export function getAdminWrongAnswerAnalysis(filters: {
+  organizationName?: string;
+  positionName?: string;
+}) {
+  return fetchApi<AdminWrongAnswerAnalysisItem[]>(
+    withQuery("/admin/reports/wrong-answers", filters)
+  );
+}
+
 export function getAdminCourses() {
   return fetchApi<AdminCourseListItem[]>("/admin/courses");
+}
+
+export function getAdminQuestionBank(filters?: {
+  type?: "single" | "multiple" | "boolean" | "case";
+  knowledgeTag?: string;
+  difficulty?: "easy" | "medium" | "hard";
+}) {
+  return fetchApi<AdminQuestionBankItem[]>(
+    withQuery("/admin/question-bank", {
+      type: filters?.type,
+      knowledgeTag: filters?.knowledgeTag,
+      difficulty: filters?.difficulty
+    })
+  );
+}
+
+export function getAdminExams() {
+  return fetchApi<AdminExamListItem[]>("/admin/exams");
+}
+
+export function getAdminNotifications() {
+  return fetchApi<AdminNotificationItem[]>("/admin/notifications");
+}
+
+export function getAdminAuditLogs(filters?: {
+  action?: string;
+  entityType?: string;
+}) {
+  return fetchApi<AdminAuditLogItem[]>(
+    withQuery("/admin/audit-logs", {
+      action: filters?.action,
+      entityType: filters?.entityType
+    })
+  );
 }
 
 export function getAdminTrainingPlans() {

@@ -57,7 +57,7 @@ export default async function AdminPage() {
         ))}
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <Link
           href="/admin/courses"
           className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
@@ -78,6 +78,34 @@ export default async function AdminPage() {
         >
           <h2 className="text-xl font-semibold text-white">报表概览</h2>
           <p className="mt-2 text-sm text-slate-300">查看课程完成率、考试通过率等核心指标。</p>
+        </Link>
+        <Link
+          href="/admin/question-bank"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">题库管理</h2>
+          <p className="mt-2 text-sm text-slate-300">维护题型、知识点和难度，支撑随机组卷。</p>
+        </Link>
+        <Link
+          href="/admin/exams"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">组卷与补考</h2>
+          <p className="mt-2 text-sm text-slate-300">发布考试、定向指派，并发起补考任务。</p>
+        </Link>
+        <Link
+          href="/admin/notices"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">通知中心</h2>
+          <p className="mt-2 text-sm text-slate-300">发布通知并执行开考/逾期/补考提醒任务。</p>
+        </Link>
+        <Link
+          href="/admin/audit-logs"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">审计日志</h2>
+          <p className="mt-2 text-sm text-slate-300">追踪关键管理动作，支持筛选查询。</p>
         </Link>
       </section>
     </AdminShell>

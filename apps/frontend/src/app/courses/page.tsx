@@ -1,13 +1,24 @@
 import { EmployeeShell } from "@/components/prototype/employee-shell";
+import { DataFetchErrorPanel } from "@/components/data-fetch-error-panel";
 import { CourseCard, FilterBar } from "@/components/prototype/ui";
 import { getCourses } from "@/lib/api-server";
-import { requiredCourses } from "@/lib/prototype-data";
-import type { CourseListItem } from "@logistics/shared";
 
 export default async function CoursesPage() {
   const courseData = await getCourses();
-  const courses =
-    courseData && courseData.length > 0 ? courseData : mapFallbackCourses();
+  if (!courseData) {
+    return (
+      <EmployeeShell
+        activeHref="/courses"
+        title="课程中心"
+        subtitle="统一展示必修与选修课程，支持岗位筛选、进度追踪和一键续学。"
+        primaryAction="继续课程"
+      >
+        <DataFetchErrorPanel />
+      </EmployeeShell>
+    );
+  }
+
+  const courses = courseData;
 
   return (
     <EmployeeShell
@@ -19,9 +30,15 @@ export default async function CoursesPage() {
       <FilterBar title="筛选条件" items={["全部课程", "必修", "选修", "本周到期", "进行中"]} />
 
       <section className="grid gap-4 md:grid-cols-2">
-        {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
-        ))}
+        {courses.length === 0 ? (
+          <article className="rounded-3xl border border-[color:var(--line)] bg-white p-6 text-sm text-slate-500">
+            暂无课程数据。
+          </article>
+        ) : (
+          courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))
+        )}
       </section>
 
       <section className="rounded-3xl border border-[color:var(--line)] bg-white p-6">
@@ -34,16 +51,4 @@ export default async function CoursesPage() {
       </section>
     </EmployeeShell>
   );
-}
-
-function mapFallbackCourses(): CourseListItem[] {
-  return requiredCourses.map((course) => ({
-    id: course.id,
-    title: course.title,
-    category: course.category,
-    durationMinutes: Number.parseInt(course.duration, 10),
-    progress: course.progress,
-    requirement: course.status === "必修" ? "required" : "optional",
-    dueDate: course.dueDate
-  }));
 }

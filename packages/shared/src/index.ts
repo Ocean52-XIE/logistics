@@ -99,6 +99,7 @@ export interface SaveLessonProgressResponse {
 
 export type ExamStatus = "pending" | "completed";
 export type ExamQuestionType = "single" | "multiple" | "boolean" | "case";
+export type QuestionDifficulty = "easy" | "medium" | "hard";
 
 export interface ExamListItem {
   id: string;
@@ -202,6 +203,118 @@ export interface PublishAdminCourseResponse {
   publishedAt: string;
 }
 
+export interface AdminQuestionBankItem {
+  id: string;
+  stem: string;
+  type: ExamQuestionType;
+  knowledgeTag: string;
+  difficulty: QuestionDifficulty;
+  isActive: boolean;
+  optionCount: number;
+  createdAt: string;
+}
+
+export interface CreateAdminQuestionBankRequest {
+  stem: string;
+  type: ExamQuestionType;
+  options: string[];
+  correctOptionIds: string[];
+  knowledgeTag: string;
+  difficulty: QuestionDifficulty;
+}
+
+export interface UpdateAdminQuestionStatusRequest {
+  isActive: boolean;
+}
+
+export interface AdminExamListItem {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  passScore: number;
+  questionCount: number;
+  startTime: string;
+  assigneeCount: number;
+  isRetake: boolean;
+  sourceExamId: string | null;
+}
+
+export interface CreateAdminExamRule {
+  singleCount: number;
+  multipleCount: number;
+  booleanCount: number;
+  caseCount: number;
+  knowledgeTags?: string[];
+  difficulty?: QuestionDifficulty;
+}
+
+export interface CreateAdminExamRequest {
+  name: string;
+  durationMinutes: number;
+  startTime: string;
+  passScore: number;
+  instructions: string;
+  warnings: string[];
+  assigneeUserIds: string[];
+  rule: CreateAdminExamRule;
+}
+
+export interface CreateAdminExamRetakeRequest {
+  userIds: string[];
+  startTime: string;
+  durationMinutes?: number;
+  passScore?: number;
+}
+
+export interface CreateAdminExamRetakeResponse {
+  examId: string;
+  name: string;
+  assigneeCount: number;
+  startTime: string;
+}
+
+export interface AdminNotificationItem {
+  id: string;
+  title: string;
+  content: string;
+  pinned: boolean;
+  sourceType: string | null;
+  readCount: number;
+  totalCount: number;
+  createdAt: string;
+}
+
+export interface CreateAdminNotificationRequest {
+  title: string;
+  content: string;
+  pinned?: boolean;
+  userIds: string[];
+}
+
+export interface RunAdminReminderResponse {
+  generatedCount: number;
+  overdueCourseCount: number;
+  upcomingExamCount: number;
+  retakeCount: number;
+}
+
+export interface AdminAuditLogItem {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  actorUserId: string | null;
+  actorName: string | null;
+  createdAt: string;
+}
+
+export interface AdminWrongAnswerAnalysisItem {
+  knowledgeTag: string;
+  wrongCount: number;
+  totalCount: number;
+  wrongRate: number;
+}
+
 export interface AdminTrainingPlanListItem {
   id: string;
   name: string;
@@ -252,6 +365,29 @@ export interface UserNotificationItem {
   createdAt: string;
   pinned: boolean;
   unread: boolean;
+}
+
+export interface MarkNotificationReadResponse {
+  notificationId: string;
+  readAt: string;
+}
+
+export interface MarkAllNotificationsReadResponse {
+  updatedCount: number;
+  readAt: string;
+}
+
+export type LearningPathStatus = "pending" | "active" | "completed";
+
+export interface LearningPathListItem {
+  id: string;
+  name: string;
+  startAt: string;
+  endAt: string;
+  courseCount: number;
+  completedCourseCount: number;
+  completionRate: number;
+  status: LearningPathStatus;
 }
 
 export interface MyProgressOverview {

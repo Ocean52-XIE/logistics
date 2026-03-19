@@ -1,10 +1,20 @@
 import type {
+  AdminAuditLogItem,
   AdminCourseListItem,
+  AdminExamListItem,
+  AdminNotificationItem,
+  AdminQuestionBankItem,
   AdminReportOverview,
   AdminTrainingPlanListItem,
+  AdminWrongAnswerAnalysisItem,
   CourseDetail,
   CourseListItem,
   CreateAdminCourseRequest,
+  CreateAdminExamRequest,
+  CreateAdminExamRetakeRequest,
+  CreateAdminExamRetakeResponse,
+  CreateAdminNotificationRequest,
+  CreateAdminQuestionBankRequest,
   CreateAdminTrainingPlanRequest,
   DashboardSummary,
   DashboardTask,
@@ -13,15 +23,20 @@ import type {
   HealthCheckResponse,
   KnowledgeArticleDetail,
   KnowledgeArticleListItem,
+  LearningPathListItem,
   LessonDetail,
+  MarkAllNotificationsReadResponse,
+  MarkNotificationReadResponse,
   MyProgressOverview,
   PublishAdminCourseResponse,
+  RunAdminReminderResponse,
   SaveExamDraftRequest,
   SaveExamDraftResponse,
   SaveLessonProgressRequest,
   SaveLessonProgressResponse,
   SubmitExamRequest,
   SubmitExamResponse,
+  UpdateAdminQuestionStatusRequest,
   UserNotificationItem
 } from "@logistics/shared";
 import { API_BASE_URL, getBrowserAccessToken } from "./auth-token";
@@ -65,6 +80,20 @@ function postJson<T>(path: string, payload: unknown): Promise<T | null> {
     },
     body: JSON.stringify(payload)
   });
+}
+
+function withQuery(
+  path: string,
+  query: Record<string, string | undefined>
+): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value && value.trim().length > 0) {
+      searchParams.set(key, value.trim());
+    }
+  }
+  const serialized = searchParams.toString();
+  return serialized ? `${path}?${serialized}` : path;
 }
 
 export function getHealthStatus() {
@@ -126,8 +155,23 @@ export function getNotifications() {
   return fetchApi<UserNotificationItem[]>("/notifications");
 }
 
+export function markNotificationRead(notificationId: string) {
+  return postJson<MarkNotificationReadResponse>(
+    `/notifications/${notificationId}/read`,
+    {}
+  );
+}
+
+export function markAllNotificationsRead() {
+  return postJson<MarkAllNotificationsReadResponse>("/notifications/read-all", {});
+}
+
 export function getMyProgress() {
   return fetchApi<MyProgressOverview>("/my-progress");
+}
+
+export function getLearningPaths() {
+  return fetchApi<LearningPathListItem[]>("/learning-paths");
 }
 
 export function getAdminCourses() {
@@ -152,4 +196,92 @@ export function createAdminTrainingPlan(payload: CreateAdminTrainingPlanRequest)
 
 export function getAdminReportOverview() {
   return fetchApi<AdminReportOverview>("/admin/reports/overview");
+}
+
+export function getAdminReportOverviewWithFilter(filters: {
+  organizationName?: string;
+  positionName?: string;
+}) {
+  return fetchApi<AdminReportOverview>(
+    withQuery("/admin/reports/overview", filters)
+  );
+}
+
+export function getAdminWrongAnswerAnalysis(filters: {
+  organizationName?: string;
+  positionName?: string;
+}) {
+  return fetchApi<AdminWrongAnswerAnalysisItem[]>(
+    withQuery("/admin/reports/wrong-answers", filters)
+  );
+}
+
+export function getAdminQuestionBank(filters?: {
+  type?: "single" | "multiple" | "boolean" | "case";
+  knowledgeTag?: string;
+  difficulty?: "easy" | "medium" | "hard";
+}) {
+  return fetchApi<AdminQuestionBankItem[]>(
+    withQuery("/admin/question-bank", {
+      type: filters?.type,
+      knowledgeTag: filters?.knowledgeTag,
+      difficulty: filters?.difficulty
+    })
+  );
+}
+
+export function createAdminQuestion(payload: CreateAdminQuestionBankRequest) {
+  return postJson<AdminQuestionBankItem>("/admin/question-bank", payload);
+}
+
+export function updateAdminQuestionStatus(
+  questionId: string,
+  payload: UpdateAdminQuestionStatusRequest
+) {
+  return postJson<AdminQuestionBankItem>(
+    `/admin/question-bank/${questionId}/status`,
+    payload
+  );
+}
+
+export function getAdminExams() {
+  return fetchApi<AdminExamListItem[]>("/admin/exams");
+}
+
+export function createAdminExam(payload: CreateAdminExamRequest) {
+  return postJson<AdminExamListItem>("/admin/exams", payload);
+}
+
+export function createAdminRetakeExam(
+  examId: string,
+  payload: CreateAdminExamRetakeRequest
+) {
+  return postJson<CreateAdminExamRetakeResponse>(
+    `/admin/exams/${examId}/retakes`,
+    payload
+  );
+}
+
+export function getAdminNotifications() {
+  return fetchApi<AdminNotificationItem[]>("/admin/notifications");
+}
+
+export function publishAdminNotification(payload: CreateAdminNotificationRequest) {
+  return postJson<AdminNotificationItem>("/admin/notifications/publish", payload);
+}
+
+export function runAdminReminderJobs() {
+  return postJson<RunAdminReminderResponse>("/admin/notifications/reminders/run", {});
+}
+
+export function getAdminAuditLogs(filters?: {
+  action?: string;
+  entityType?: string;
+}) {
+  return fetchApi<AdminAuditLogItem[]>(
+    withQuery("/admin/audit-logs", {
+      action: filters?.action,
+      entityType: filters?.entityType
+    })
+  );
 }

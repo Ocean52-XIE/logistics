@@ -12,11 +12,11 @@ export default async function AdminSectionPage({
     <AdminShell
       activeHref="/admin"
       title="管理功能收口中"
-      subtitle="MVP 阶段仅保留课程管理、培训计划、报表概览和人员查看，其余模块后续开放。"
+      subtitle="当前仅开放已在左侧导航中列出的管理模块，其他能力将在后续阶段逐步上线。"
     >
       <ComingSoonPanel
-        title={`模块 /admin/${section} 暂未纳入 MVP`}
-        description="为避免首版范围失控，当前版本优先保障培训运营主链路。该模块已规划，会在后续阶段逐步上线。"
+        title={`模块 /admin/${section} 暂未开放`}
+        description="该模块尚未纳入当前交付范围，请先使用已上线的阶段功能。"
       />
     </AdminShell>
   );

@@ -3,6 +3,8 @@ import {
   CourseStatus,
   CourseRequirement,
   LearningContentType,
+  QuestionDifficulty,
+  QuestionType,
   PrismaClient,
   UserRole
 } from "@prisma/client";
@@ -13,7 +15,10 @@ async function main() {
   const defaultPasswordHash = await hash("123456", 10);
 
   await prisma.userNotification.deleteMany();
+  await prisma.auditLog.deleteMany();
   await prisma.notification.deleteMany();
+  await prisma.examAssignment.deleteMany();
+  await prisma.questionBank.deleteMany();
   await prisma.trainingPlanAssignment.deleteMany();
   await prisma.trainingPlanCourse.deleteMany();
   await prisma.trainingPlan.deleteMany();
@@ -34,6 +39,7 @@ async function main() {
         name: "李晨",
         role: UserRole.employee,
         organizationName: "华东仓",
+        positionName: "分拣员",
         isActive: true
       },
       {
@@ -43,6 +49,7 @@ async function main() {
         name: "系统管理员",
         role: UserRole.admin,
         organizationName: "总部",
+        positionName: "系统管理员",
         isActive: true
       },
       {
@@ -52,6 +59,27 @@ async function main() {
         name: "王敏",
         role: UserRole.employee,
         organizationName: "华南仓",
+        positionName: "收货员",
+        isActive: true
+      },
+      {
+        id: "U-MGR-2001",
+        username: "manager1",
+        passwordHash: defaultPasswordHash,
+        name: "周航",
+        role: UserRole.manager,
+        organizationName: "华东仓",
+        positionName: "站点主管",
+        isActive: true
+      },
+      {
+        id: "U-TRN-3001",
+        username: "trainer1",
+        passwordHash: defaultPasswordHash,
+        name: "吴昕",
+        role: UserRole.trainer,
+        organizationName: "培训中心",
+        positionName: "培训师",
         isActive: true
       }
     ]
@@ -200,6 +228,81 @@ async function main() {
         content: "设备上机前检查和风险防控要点。",
         totalSeconds: 720,
         sortOrder: 1
+      }
+    ]
+  });
+
+  await prisma.questionBank.createMany({
+    data: [
+      {
+        stem: "遇到扫描异常且条码不清晰时，优先执行哪一步？",
+        type: QuestionType.single,
+        options: [
+          { id: "A", label: "人工录入单号后继续流转" },
+          { id: "B", label: "按 SOP 拍照留档并转异常件流程" },
+          { id: "C", label: "先搁置，班后处理" }
+        ],
+        correctOptionIds: ["B"],
+        knowledgeTag: "异常处理",
+        difficulty: QuestionDifficulty.medium,
+        isActive: true,
+        createdBy: "U-ADM-0001"
+      },
+      {
+        stem: "以下哪些属于装卸安全隐患？",
+        type: QuestionType.multiple,
+        options: [
+          { id: "A", label: "未佩戴防护装备" },
+          { id: "B", label: "湿滑地面未做警示" },
+          { id: "C", label: "按规定执行设备点检" },
+          { id: "D", label: "超载操作" }
+        ],
+        correctOptionIds: ["A", "B", "D"],
+        knowledgeTag: "安全生产",
+        difficulty: QuestionDifficulty.medium,
+        isActive: true,
+        createdBy: "U-ADM-0001"
+      },
+      {
+        stem: "判断：异常件处理完成后可不回写系统。",
+        type: QuestionType.boolean,
+        options: [
+          { id: "T", label: "正确" },
+          { id: "F", label: "错误" }
+        ],
+        correctOptionIds: ["F"],
+        knowledgeTag: "流程闭环",
+        difficulty: QuestionDifficulty.easy,
+        isActive: true,
+        createdBy: "U-ADM-0001"
+      },
+      {
+        stem: "现场发现温控异常并伴随客户催单，以下处置哪项最合理？",
+        type: QuestionType.case,
+        options: [
+          { id: "A", label: "先忽略温控异常优先派送" },
+          { id: "B", label: "按异常流程升级并同步客服解释" },
+          { id: "C", label: "下班后统一处理" }
+        ],
+        correctOptionIds: ["B"],
+        knowledgeTag: "异常升级",
+        difficulty: QuestionDifficulty.hard,
+        isActive: true,
+        createdBy: "U-ADM-0001"
+      },
+      {
+        stem: "签收争议工单应在多久内升级？",
+        type: QuestionType.single,
+        options: [
+          { id: "A", label: "30 分钟内" },
+          { id: "B", label: "2 小时内" },
+          { id: "C", label: "24 小时内" }
+        ],
+        correctOptionIds: ["A"],
+        knowledgeTag: "客服协同",
+        difficulty: QuestionDifficulty.easy,
+        isActive: true,
+        createdBy: "U-ADM-0001"
       }
     ]
   });

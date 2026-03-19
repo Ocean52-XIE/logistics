@@ -1,52 +1,35 @@
 import Link from "next/link";
 import { EmployeeShell } from "@/components/prototype/employee-shell";
+import { DataFetchErrorPanel } from "@/components/data-fetch-error-panel";
 import { CourseCard, StatMetricCard, StatusBadge } from "@/components/prototype/ui";
-import {
-  notifications,
-  requiredCourses
-} from "@/lib/prototype-data";
-import { getCourses, getDashboardSummary, getDashboardTasks } from "@/lib/api-server";
-import type {
-  CourseListItem,
-  DashboardSummary,
-  DashboardTask
-} from "@logistics/shared";
-
-const fallbackSummary: DashboardSummary = {
-  completionRate: 74,
-  pendingCourses: 2,
-  pendingExams: 1,
-  completedCourses: 2
-};
-
-const fallbackTasks: DashboardTask[] = [
-  {
-    id: "task-C-1024",
-    title: "仓配一体全链路基础",
-    type: "course",
-    status: "in_progress",
-    dueDate: "2026-03-24"
-  },
-  {
-    id: "task-EX-301",
-    title: "仓储安全规范考试",
-    type: "exam",
-    status: "todo",
-    dueDate: "2026-03-23"
-  }
-];
+import { getCourses, getDashboardSummary, getDashboardTasks, getNotifications } from "@/lib/api-server";
+import type { DashboardTask } from "@logistics/shared";
 
 export default async function DashboardPage() {
-  const [summaryData, taskData, courseData] = await Promise.all([
+  const [summaryData, taskData, courseData, notificationsData] = await Promise.all([
     getDashboardSummary(),
     getDashboardTasks(),
-    getCourses()
+    getCourses(),
+    getNotifications()
   ]);
 
-  const summary = summaryData ?? fallbackSummary;
-  const tasks = taskData ?? fallbackTasks;
-  const courses =
-    courseData?.filter((course) => course.requirement === "required") ?? [];
+  if (!summaryData || !taskData || !courseData || !notificationsData) {
+    return (
+      <EmployeeShell
+        activeHref="/dashboard"
+        title="员工学习首页"
+        subtitle="10 秒内明确下一步学习动作，围绕“今天学什么、还差多少、最近有什么考试”组织信息。"
+        primaryAction="继续学习"
+      >
+        <DataFetchErrorPanel />
+      </EmployeeShell>
+    );
+  }
+
+  const summary = summaryData;
+  const tasks = taskData;
+  const courses = courseData.filter((course) => course.requirement === "required");
+  const notifications = notificationsData;
 
   const metrics = [
     {
@@ -76,7 +59,11 @@ export default async function DashboardPage() {
   ];
 
   const todayTaskCards = tasks.slice(0, 3);
-  const courseCards = (courses.length > 0 ? courses : mapFallbackCourses()).slice(0, 4);
+  const courseCards = courses.slice(0, 4);
+  const pendingExamTask = tasks.find((task) => task.type === "exam");
+  const pendingExamId = pendingExamTask?.id.startsWith("task-")
+    ? pendingExamTask.id.slice(5)
+    : null;
 
   return (
     <EmployeeShell
@@ -129,15 +116,23 @@ export default async function DashboardPage() {
         <article className="rounded-3xl border border-[color:var(--line)] bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Exam Reminder</p>
           <h3 className="mt-2 text-xl font-semibold text-slate-800">待参加考试</h3>
-          <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            《仓储安全规范考试》将在 03-23 16:30 开始，建议提前 10 分钟进入。
-          </p>
-          <Link
-            href="/exams/EX-301"
-            className="mt-4 inline-flex rounded-xl border border-brand-200 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
-          >
-            查看考试详情
-          </Link>
+          {pendingExamTask ? (
+            <>
+              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                《{pendingExamTask.title}》待完成，截止日期 {pendingExamTask.dueDate}。
+              </p>
+              <Link
+                href={pendingExamId ? `/exams/${pendingExamId}` : "/exams"}
+                className="mt-4 inline-flex rounded-xl border border-brand-200 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
+              >
+                查看考试详情
+              </Link>
+            </>
+          ) : (
+            <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              当前没有待参加考试。
+            </p>
+          )}
 
           <div className="mt-6 rounded-2xl bg-[color:var(--surface-muted)] p-4">
             <p className="font-medium text-slate-700">岗位认证状态</p>
@@ -155,9 +150,15 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {courseCards.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
+            {courseCards.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                暂无必修课程。
+              </div>
+            ) : (
+              courseCards.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))
+            )}
           </div>
         </article>
 
@@ -185,12 +186,20 @@ export default async function DashboardPage() {
               </Link>
             </div>
             <div className="mt-4 space-y-3">
-              {notifications.slice(0, 3).map((notice) => (
-                <div key={notice.id} className="rounded-2xl border border-slate-200 px-3 py-2.5">
-                  <p className="text-sm font-medium text-slate-800">{notice.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">{notice.time}</p>
+              {notifications.length === 0 ? (
+                <div className="rounded-2xl border border-slate-200 px-3 py-2.5 text-sm text-slate-500">
+                  暂无通知。
                 </div>
-              ))}
+              ) : (
+                notifications.slice(0, 3).map((notice) => (
+                  <div key={notice.id} className="rounded-2xl border border-slate-200 px-3 py-2.5">
+                    <p className="text-sm font-medium text-slate-800">{notice.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {new Date(notice.createdAt).toLocaleString("zh-CN")}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </article>
         </div>
@@ -207,16 +216,4 @@ function statusLabel(status: DashboardTask["status"]) {
     return "进行中";
   }
   return "待开始";
-}
-
-function mapFallbackCourses(): CourseListItem[] {
-  return requiredCourses.map((course) => ({
-    id: course.id,
-    title: course.title,
-    category: course.category,
-    durationMinutes: Number.parseInt(course.duration, 10),
-    progress: course.progress,
-    requirement: course.status === "必修" ? "required" : "optional",
-    dueDate: course.dueDate
-  }));
 }

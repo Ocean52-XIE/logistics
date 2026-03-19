@@ -208,7 +208,7 @@ export default function LoginPage() {
 }
 
 function resolveHomeRoute(role: UserProfile["role"]) {
-  if (role === "admin" || role === "manager" || role === "trainer") {
+  if (role === "admin") {
     return "/admin";
   }
   return "/dashboard";

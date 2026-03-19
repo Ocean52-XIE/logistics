@@ -15,6 +15,9 @@ import type {
   ExamListItem,
   KnowledgeArticleDetail,
   KnowledgeArticleListItem,
+  LearningPathListItem,
+  MarkAllNotificationsReadResponse,
+  MarkNotificationReadResponse,
   MyProgressOverview,
   SaveExamDraftResponse,
   SaveLessonProgressResponse,
@@ -32,7 +35,7 @@ import { LearningService } from "./learning.service";
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles("employee", "admin")
+@Roles("employee", "manager", "trainer", "admin")
 export class LearningController {
   constructor(
     @Inject(LearningService)
@@ -118,6 +121,30 @@ export class LearningController {
     @CurrentUser("id") userId: string | null
   ): Promise<UserNotificationItem[]> {
     return this.learningService.getNotifications(userId ?? "");
+  }
+
+  @Post("notifications/read-all")
+  @HttpCode(200)
+  async markAllNotificationsRead(
+    @CurrentUser("id") userId: string | null
+  ): Promise<MarkAllNotificationsReadResponse> {
+    return this.learningService.markAllNotificationsRead(userId ?? "");
+  }
+
+  @Post("notifications/:notificationId/read")
+  @HttpCode(200)
+  async markNotificationRead(
+    @CurrentUser("id") userId: string | null,
+    @Param("notificationId") notificationId: string
+  ): Promise<MarkNotificationReadResponse> {
+    return this.learningService.markNotificationRead(userId ?? "", notificationId);
+  }
+
+  @Get("learning-paths")
+  async getLearningPaths(
+    @CurrentUser("id") userId: string | null
+  ): Promise<LearningPathListItem[]> {
+    return this.learningService.getLearningPaths(userId ?? "");
   }
 
   @Get("my-progress")

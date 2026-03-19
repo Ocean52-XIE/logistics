@@ -31,6 +31,19 @@ enum LearningContentType {
   quiz
 }
 
+enum QuestionType {
+  single
+  multiple
+  boolean
+  case
+}
+
+enum QuestionDifficulty {
+  easy
+  medium
+  hard
+}
+
 model User {
   id               String             @id
   username         String             @unique
@@ -38,13 +51,16 @@ model User {
   name             String
   role             UserRole           @default(employee)
   organizationName String
+  positionName     String             @default("未配置")
   isActive         Boolean            @default(true)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   examAttempts     ExamAttempt[]
+  examAssignments  ExamAssignment[]
   learningProgress LearningProgress[]
   trainingPlanAssignments TrainingPlanAssignment[]
   userNotifications UserNotification[]
+  auditLogs        AuditLog[]         @relation("AuditActor")
 }
 
 model Course {
@@ -92,9 +108,13 @@ model Exam {
   instructions    String
   warnings        Json
   questions       Json
+  isRetake        Boolean       @default(false)
+  sourceExamId    String?
+  createdBy       String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   attempts        ExamAttempt[]
+  assignments     ExamAssignment[]
 }
 
 model ExamAttempt {
@@ -183,11 +203,45 @@ model KnowledgeArticle {
   updatedAt        DateTime @updatedAt
 }
 
+model QuestionBank {
+  id               String             @id @default(cuid())
+  stem             String
+  type             QuestionType
+  options          Json
+  correctOptionIds Json
+  knowledgeTag     String
+  difficulty       QuestionDifficulty @default(medium)
+  isActive         Boolean            @default(true)
+  createdBy        String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([type, difficulty, isActive])
+  @@index([knowledgeTag])
+}
+
+model ExamAssignment {
+  id           String   @id @default(cuid())
+  examId       String
+  userId       String
+  assignedAt   DateTime @default(now())
+  isRetake     Boolean  @default(false)
+  sourceExamId String?
+  exam         Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, userId])
+  @@index([userId])
+  @@index([sourceExamId])
+}
+
 model Notification {
   id                String             @id
   title             String
   content           String
   pinned            Boolean            @default(false)
+  sourceType        String?
+  sourceKey         String?            @unique
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   userNotifications UserNotification[]
@@ -204,4 +258,19 @@ model UserNotification {
 
   @@unique([userId, notificationId])
   @@index([notificationId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorUserId String?
+  action     String
+  entityType String
+  entityId   String
+  detail     Json
+  createdAt  DateTime @default(now())
+  actorUser  User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@index([entityType, createdAt])
 }

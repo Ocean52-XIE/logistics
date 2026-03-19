@@ -16,7 +16,10 @@ import type {
   ExamReviewItem,
   KnowledgeArticleDetail,
   KnowledgeArticleListItem,
+  LearningPathListItem,
   LessonDetail,
+  MarkAllNotificationsReadResponse,
+  MarkNotificationReadResponse,
   MyProgressOverview,
   SaveExamDraftRequest,
   SaveExamDraftResponse,
@@ -288,6 +291,20 @@ export class LearningService {
 
   async getExams(userId: string): Promise<ExamListItem[]> {
     const exams = await this.prisma.exam.findMany({
+      where: {
+        OR: [
+          {
+            assignments: {
+              none: {}
+            }
+          },
+          {
+            assignments: {
+              some: { userId }
+            }
+          }
+        ]
+      },
       orderBy: { startTime: "asc" }
     });
     const attempts = await this.prisma.examAttempt.findMany({
@@ -375,6 +392,131 @@ export class LearningService {
     }));
   }
 
+  async markNotificationRead(
+    userId: string,
+    notificationId: string
+  ): Promise<MarkNotificationReadResponse> {
+    const existing = await this.prisma.userNotification.findUnique({
+      where: {
+        userId_notificationId: {
+          userId,
+          notificationId
+        }
+      },
+      select: {
+        readAt: true
+      }
+    });
+
+    if (!existing) {
+      throw new NotFoundException(
+        `Notification ${notificationId} not found for user ${userId}`
+      );
+    }
+
+    if (existing.readAt) {
+      return {
+        notificationId,
+        readAt: existing.readAt.toISOString()
+      };
+    }
+
+    const readAt = new Date();
+    await this.prisma.userNotification.update({
+      where: {
+        userId_notificationId: {
+          userId,
+          notificationId
+        }
+      },
+      data: {
+        readAt
+      }
+    });
+
+    return {
+      notificationId,
+      readAt: readAt.toISOString()
+    };
+  }
+
+  async markAllNotificationsRead(
+    userId: string
+  ): Promise<MarkAllNotificationsReadResponse> {
+    const readAt = new Date();
+    const updated = await this.prisma.userNotification.updateMany({
+      where: {
+        userId,
+        readAt: null
+      },
+      data: {
+        readAt
+      }
+    });
+
+    return {
+      updatedCount: updated.count,
+      readAt: readAt.toISOString()
+    };
+  }
+
+  async getLearningPaths(userId: string): Promise<LearningPathListItem[]> {
+    const plans = await this.prisma.trainingPlan.findMany({
+      where: {
+        assignments: {
+          some: { userId }
+        }
+      },
+      orderBy: [{ startAt: "asc" }, { createdAt: "asc" }],
+      include: {
+        courses: {
+          select: {
+            courseId: true
+          }
+        }
+      }
+    });
+
+    if (plans.length === 0) {
+      return [];
+    }
+
+    const uniqueCourseIds = Array.from(
+      new Set(plans.flatMap((plan) => plan.courses.map((course) => course.courseId)))
+    );
+    const completedCourseIds = await this.getCompletedCourseIdSetByUser(
+      userId,
+      uniqueCourseIds
+    );
+
+    const now = Date.now();
+    return plans.map((plan) => {
+      const courseIds = plan.courses.map((course) => course.courseId);
+      const completedCourseCount = courseIds.filter((courseId) =>
+        completedCourseIds.has(courseId)
+      ).length;
+      const courseCount = courseIds.length;
+
+      return {
+        id: plan.id,
+        name: plan.name,
+        startAt: plan.startAt.toISOString(),
+        endAt: plan.endAt.toISOString(),
+        courseCount,
+        completedCourseCount,
+        completionRate:
+          courseCount === 0
+            ? 0
+            : Math.round((completedCourseCount / courseCount) * 100),
+        status: this.resolvePlanStatus(
+          now,
+          plan.startAt.getTime(),
+          plan.endAt.getTime()
+        )
+      };
+    });
+  }
+
   async getMyProgress(userId: string): Promise<MyProgressOverview> {
     const courses = await this.getCoursesWithUserProgress(userId);
     const requiredCourses = courses.filter(
@@ -439,7 +581,7 @@ export class LearningService {
   }
 
   async getExam(userId: string, examId: string): Promise<ExamDetail> {
-    const exam = await this.getExamEntity(examId);
+    const exam = await this.getExamEntity(examId, userId);
     const attempt = await this.getOrCreateAttempt(userId, examId, exam.durationMinutes);
     const questions = this.parseQuestions(exam.questions);
 
@@ -471,7 +613,7 @@ export class LearningService {
     examId: string,
     payload: SaveExamDraftRequest
   ): Promise<SaveExamDraftResponse> {
-    const exam = await this.getExamEntity(examId);
+    const exam = await this.getExamEntity(examId, userId);
     const questions = this.parseQuestions(exam.questions);
     const attempt = await this.getOrCreateAttempt(userId, exam.id, exam.durationMinutes);
 
@@ -507,7 +649,7 @@ export class LearningService {
     examId: string,
     payload: SubmitExamRequest
   ): Promise<SubmitExamResponse> {
-    const exam = await this.getExamEntity(examId);
+    const exam = await this.getExamEntity(examId, userId);
     const questions = this.parseQuestions(exam.questions);
     const attempt = await this.getOrCreateAttempt(userId, exam.id, exam.durationMinutes);
 
@@ -665,12 +807,27 @@ export class LearningService {
     return this.getCourseProgressFromLessons(course.lessons);
   }
 
-  private async getExamEntity(examId: string) {
+  private async getExamEntity(examId: string, userId: string) {
     const exam = await this.prisma.exam.findUnique({
-      where: { id: examId }
+      where: { id: examId },
+      include: {
+        assignments: {
+          where: { userId },
+          select: { userId: true },
+          take: 1
+        },
+        _count: {
+          select: {
+            assignments: true
+          }
+        }
+      }
     });
 
     if (!exam) {
+      throw new NotFoundException(`Exam ${examId} not found`);
+    }
+    if (exam._count.assignments > 0 && exam.assignments.length === 0) {
       throw new NotFoundException(`Exam ${examId} not found`);
     }
     return exam;
@@ -702,6 +859,64 @@ export class LearningService {
         remainingSeconds: durationMinutes * 60
       }
     });
+  }
+
+  private async getCompletedCourseIdSetByUser(
+    userId: string,
+    courseIds: string[]
+  ): Promise<Set<string>> {
+    if (courseIds.length === 0) {
+      return new Set<string>();
+    }
+
+    const [courseLessons, completedRows] = await Promise.all([
+      this.prisma.lesson.findMany({
+        where: {
+          courseId: { in: courseIds }
+        },
+        select: {
+          courseId: true,
+          id: true
+        }
+      }),
+      this.prisma.learningProgress.findMany({
+        where: {
+          userId,
+          courseId: { in: courseIds },
+          completed: true
+        },
+        select: {
+          courseId: true,
+          lessonId: true
+        }
+      })
+    ]);
+
+    const requiredLessonCount = new Map<string, number>();
+    for (const row of courseLessons) {
+      requiredLessonCount.set(
+        row.courseId,
+        (requiredLessonCount.get(row.courseId) ?? 0) + 1
+      );
+    }
+
+    const completedLessonMap = new Map<string, Set<string>>();
+    for (const row of completedRows) {
+      if (!completedLessonMap.has(row.courseId)) {
+        completedLessonMap.set(row.courseId, new Set<string>());
+      }
+      completedLessonMap.get(row.courseId)?.add(row.lessonId);
+    }
+
+    const completedCourseIds = new Set<string>();
+    for (const [courseId, completedLessons] of completedLessonMap.entries()) {
+      const expected = requiredLessonCount.get(courseId) ?? 0;
+      if (expected > 0 && completedLessons.size >= expected) {
+        completedCourseIds.add(courseId);
+      }
+    }
+
+    return completedCourseIds;
   }
 
   private normalizeAnswers(
@@ -832,6 +1047,20 @@ export class LearningService {
       return "in_progress";
     }
     return "todo";
+  }
+
+  private resolvePlanStatus(
+    nowMs: number,
+    startMs: number,
+    endMs: number
+  ): "pending" | "active" | "completed" {
+    if (nowMs < startMs) {
+      return "pending";
+    }
+    if (nowMs > endMs) {
+      return "completed";
+    }
+    return "active";
   }
 
   private toStringArray(value: Prisma.JsonValue): string[] {

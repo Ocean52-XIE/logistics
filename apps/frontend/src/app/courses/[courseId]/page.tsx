@@ -1,39 +1,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { EmployeeShell } from "@/components/prototype/employee-shell";
+import { DataFetchErrorPanel } from "@/components/data-fetch-error-panel";
 import { ProgressCard, RoleTag, StatusBadge } from "@/components/prototype/ui";
 import { getCourseDetail } from "@/lib/api-server";
 import type { CourseDetail } from "@logistics/shared";
-
-const fallbackCourse: CourseDetail = {
-  id: "C-1024",
-  title: "仓配一体全链路基础",
-  category: "岗位核心",
-  durationMinutes: 90,
-  progress: 62,
-  requirement: "required",
-  dueDate: "2026-03-24",
-  description: "本课程聚焦新员工上岗前必须掌握的履约链路知识。",
-  roles: ["新员工", "分拣员"],
-  completionRule: "章节全部打点 + 随堂测验",
-  attachments: ["仓储安全检查清单.pdf", "异常件判定速查表.xlsx"],
-  chapters: [
-    {
-      lessonId: "L-1003",
-      title: "仓配链路概览",
-      contentType: "video",
-      progress: 100,
-      status: "completed"
-    },
-    {
-      lessonId: "L-1004",
-      title: "核心 SOP：分拣作业流程",
-      contentType: "video",
-      progress: 60,
-      status: "in_progress"
-    }
-  ]
-};
 
 export default async function CourseDetailPage({
   params
@@ -41,7 +12,20 @@ export default async function CourseDetailPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const course = (await getCourseDetail(courseId)) ?? fallbackCourse;
+  const course = await getCourseDetail(courseId);
+
+  if (!course) {
+    return (
+      <EmployeeShell
+        activeHref="/courses"
+        title="课程详情"
+        subtitle="覆盖课程封面、适用岗位、章节目录、学习进度、附件下载和答疑入口。"
+        primaryAction="继续学习"
+      >
+        <DataFetchErrorPanel />
+      </EmployeeShell>
+    );
+  }
 
   return (
     <EmployeeShell

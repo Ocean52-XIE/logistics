@@ -6,9 +6,9 @@ export default function HomePage() {
       <div className="mx-auto max-w-6xl space-y-8">
         <section className="rounded-[36px] border border-[color:var(--line)] bg-white/90 p-8 shadow-panel md:p-10">
           <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Logistics Training Platform</p>
-          <h1 className="mt-4 text-4xl font-semibold text-brand-700 md:text-5xl">前端界面原型入口</h1>
+          <h1 className="mt-4 text-4xl font-semibold text-brand-700 md:text-5xl">MVP 运行入口</h1>
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 md:text-lg">
-            已按设计文档完成员工学习端与管理后台端的原型页面。当前为纯前端 mock 数据版本，不依赖后端接口。
+            当前版本已收口到“登录 -&gt; 学习 -&gt; 考试 -&gt; 管理查看”主链路，并优先接入真实后端数据。
           </p>
         </section>
 
@@ -19,7 +19,7 @@ export default function HomePage() {
           >
             <p className="text-sm text-slate-500">Employee</p>
             <h2 className="mt-3 text-2xl font-semibold text-slate-800">员工学习端</h2>
-            <p className="mt-3 text-sm text-slate-600">覆盖首页、课程、考试、知识库、认证、进度与通知。</p>
+            <p className="mt-3 text-sm text-slate-600">覆盖首页、课程、考试与结果查看。</p>
           </Link>
           <Link
             href="/admin"
@@ -27,15 +27,15 @@ export default function HomePage() {
           >
             <p className="text-sm text-slate-400">Admin</p>
             <h2 className="mt-3 text-2xl font-semibold">管理后台端</h2>
-            <p className="mt-3 text-sm text-slate-300">按内容、计划、执行、分析分组的运营驾驶舱原型。</p>
+            <p className="mt-3 text-sm text-slate-300">支持课程管理、培训计划发布与报表概览。</p>
           </Link>
           <Link
             href="/login"
             className="rounded-3xl border border-[color:var(--line)] bg-gradient-to-br from-brand-500 to-brand-700 p-6 text-white transition hover:-translate-y-0.5"
           >
             <p className="text-sm text-white/70">Auth</p>
-            <h2 className="mt-3 text-2xl font-semibold">登录页原型</h2>
-            <p className="mt-3 text-sm text-white/80">含账号密码、短信登录入口和角色快捷体验入口。</p>
+            <h2 className="mt-3 text-2xl font-semibold">登录页</h2>
+            <p className="mt-3 text-sm text-white/80">基于后端账号密码鉴权并自动写入登录态。</p>
           </Link>
         </section>
       </div>

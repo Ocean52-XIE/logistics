@@ -19,6 +19,11 @@ enum CourseRequirement {
   optional
 }
 
+enum CourseStatus {
+  draft
+  published
+}
+
 enum LearningContentType {
   video
   article
@@ -38,6 +43,8 @@ model User {
   updatedAt        DateTime           @updatedAt
   examAttempts     ExamAttempt[]
   learningProgress LearningProgress[]
+  trainingPlanAssignments TrainingPlanAssignment[]
+  userNotifications UserNotification[]
 }
 
 model Course {
@@ -51,10 +58,13 @@ model Course {
   roles            Json
   completionRule   String
   attachments      Json
+  status           CourseStatus       @default(draft)
+  publishedAt      DateTime?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   lessons          Lesson[]
   learningProgress LearningProgress[]
+  trainingPlanCourses TrainingPlanCourse[]
 }
 
 model Lesson {
@@ -122,4 +132,76 @@ model LearningProgress {
 
   @@unique([userId, lessonId])
   @@index([userId, courseId])
+}
+
+model TrainingPlan {
+  id          String                    @id @default(cuid())
+  name        String
+  startAt     DateTime
+  endAt       DateTime
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  courses     TrainingPlanCourse[]
+  assignments TrainingPlanAssignment[]
+}
+
+model TrainingPlanCourse {
+  id        String       @id @default(cuid())
+  planId    String
+  courseId  String
+  createdAt DateTime     @default(now())
+  plan      TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  course    Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, courseId])
+  @@index([courseId])
+}
+
+model TrainingPlanAssignment {
+  id          String       @id @default(cuid())
+  planId       String
+  userId       String
+  assignedAt   DateTime    @default(now())
+  completedAt  DateTime?
+  plan         TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, userId])
+  @@index([userId])
+}
+
+model KnowledgeArticle {
+  id               String   @id
+  title            String
+  category         String
+  summary          String
+  content          String
+  tags             Json
+  relatedCourseIds Json
+  isHot            Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Notification {
+  id                String             @id
+  title             String
+  content           String
+  pinned            Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  userNotifications UserNotification[]
+}
+
+model UserNotification {
+  id             String       @id @default(cuid())
+  userId         String
+  notificationId String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationId])
+  @@index([notificationId])
 }

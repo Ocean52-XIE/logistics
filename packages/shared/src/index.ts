@@ -172,3 +172,94 @@ export interface SubmitExamResponse {
   suggestedReviews: string[];
   submittedAt: string;
 }
+
+export type AdminCourseStatus = "draft" | "published";
+
+export interface AdminCourseListItem {
+  id: string;
+  title: string;
+  category: string;
+  durationMinutes: number;
+  requirement: CourseRequirement;
+  status: AdminCourseStatus;
+  dueDate: string;
+  lessonCount: number;
+  publishedAt: string | null;
+}
+
+export interface CreateAdminCourseRequest {
+  title: string;
+  category: string;
+  durationMinutes: number;
+  requirement: CourseRequirement;
+  dueDate: string;
+  description: string;
+}
+
+export interface PublishAdminCourseResponse {
+  id: string;
+  status: AdminCourseStatus;
+  publishedAt: string;
+}
+
+export interface AdminTrainingPlanListItem {
+  id: string;
+  name: string;
+  startAt: string;
+  endAt: string;
+  courseCount: number;
+  assigneeCount: number;
+  completionRate: number;
+  status: "pending" | "active" | "completed";
+}
+
+export interface CreateAdminTrainingPlanRequest {
+  name: string;
+  startAt: string;
+  endAt: string;
+  courseIds: string[];
+  assigneeUserIds: string[];
+}
+
+export interface AdminReportOverview {
+  totalUsers: number;
+  activeLearners: number;
+  completionRate: number;
+  passRate: number;
+  publishedCourses: number;
+  activePlans: number;
+}
+
+export interface KnowledgeArticleListItem {
+  id: string;
+  title: string;
+  category: string;
+  summary: string;
+  updatedAt: string;
+  isHot: boolean;
+}
+
+export interface KnowledgeArticleDetail extends KnowledgeArticleListItem {
+  content: string;
+  tags: string[];
+  relatedCourseIds: string[];
+}
+
+export interface UserNotificationItem {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  pinned: boolean;
+  unread: boolean;
+}
+
+export interface MyProgressOverview {
+  totalLearnSeconds: number;
+  completedCourseCount: number;
+  requiredCourseCount: number;
+  completionRate: number;
+  averageExamScore: number | null;
+  passedExamCount: number;
+  totalExamCount: number;
+}

@@ -1,18 +1,28 @@
 import type {
+  AdminCourseListItem,
+  AdminReportOverview,
+  AdminTrainingPlanListItem,
   CourseDetail,
   CourseListItem,
+  CreateAdminCourseRequest,
+  CreateAdminTrainingPlanRequest,
   DashboardSummary,
   DashboardTask,
   ExamDetail,
   ExamListItem,
   HealthCheckResponse,
+  KnowledgeArticleDetail,
+  KnowledgeArticleListItem,
   LessonDetail,
+  MyProgressOverview,
+  PublishAdminCourseResponse,
   SaveExamDraftRequest,
   SaveExamDraftResponse,
   SaveLessonProgressRequest,
   SaveLessonProgressResponse,
   SubmitExamRequest,
-  SubmitExamResponse
+  SubmitExamResponse,
+  UserNotificationItem
 } from "@logistics/shared";
 import { API_BASE_URL, getBrowserAccessToken } from "./auth-token";
 
@@ -102,4 +112,44 @@ export function saveExamDraft(examId: string, payload: SaveExamDraftRequest) {
 
 export function submitExam(examId: string, payload: SubmitExamRequest) {
   return postJson<SubmitExamResponse>(`/exams/${examId}/submit`, payload);
+}
+
+export function getKnowledgeArticles() {
+  return fetchApi<KnowledgeArticleListItem[]>("/knowledge-articles");
+}
+
+export function getKnowledgeArticleDetail(articleId: string) {
+  return fetchApi<KnowledgeArticleDetail>(`/knowledge-articles/${articleId}`);
+}
+
+export function getNotifications() {
+  return fetchApi<UserNotificationItem[]>("/notifications");
+}
+
+export function getMyProgress() {
+  return fetchApi<MyProgressOverview>("/my-progress");
+}
+
+export function getAdminCourses() {
+  return fetchApi<AdminCourseListItem[]>("/admin/courses");
+}
+
+export function createAdminCourse(payload: CreateAdminCourseRequest) {
+  return postJson<AdminCourseListItem>("/admin/courses", payload);
+}
+
+export function publishAdminCourse(courseId: string) {
+  return postJson<PublishAdminCourseResponse>(`/admin/courses/${courseId}/publish`, {});
+}
+
+export function getAdminTrainingPlans() {
+  return fetchApi<AdminTrainingPlanListItem[]>("/admin/training-plans");
+}
+
+export function createAdminTrainingPlan(payload: CreateAdminTrainingPlanRequest) {
+  return postJson<AdminTrainingPlanListItem>("/admin/training-plans", payload);
+}
+
+export function getAdminReportOverview() {
+  return fetchApi<AdminReportOverview>("/admin/reports/overview");
 }

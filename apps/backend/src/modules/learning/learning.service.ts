@@ -14,13 +14,17 @@ import type {
   ExamListItem,
   ExamQuestion,
   ExamReviewItem,
+  KnowledgeArticleDetail,
+  KnowledgeArticleListItem,
   LessonDetail,
+  MyProgressOverview,
   SaveExamDraftRequest,
   SaveExamDraftResponse,
   SaveLessonProgressRequest,
   SaveLessonProgressResponse,
   SubmitExamRequest,
-  SubmitExamResponse
+  SubmitExamResponse,
+  UserNotificationItem
 } from "@logistics/shared";
 import { PrismaService } from "../database/prisma.service";
 
@@ -307,6 +311,133 @@ export class LearningService {
     });
   }
 
+  async getKnowledgeArticles(): Promise<KnowledgeArticleListItem[]> {
+    const articles = await this.prisma.knowledgeArticle.findMany({
+      orderBy: [{ isHot: "desc" }, { updatedAt: "desc" }]
+    });
+
+    return articles.map((article) => ({
+      id: article.id,
+      title: article.title,
+      category: article.category,
+      summary: article.summary,
+      updatedAt: article.updatedAt.toISOString(),
+      isHot: article.isHot
+    }));
+  }
+
+  async getKnowledgeArticle(articleId: string): Promise<KnowledgeArticleDetail> {
+    const article = await this.prisma.knowledgeArticle.findUnique({
+      where: { id: articleId }
+    });
+
+    if (!article) {
+      throw new NotFoundException(`Knowledge article ${articleId} not found`);
+    }
+
+    return {
+      id: article.id,
+      title: article.title,
+      category: article.category,
+      summary: article.summary,
+      content: article.content,
+      tags: this.toStringArray(article.tags),
+      relatedCourseIds: this.toStringArray(article.relatedCourseIds),
+      updatedAt: article.updatedAt.toISOString(),
+      isHot: article.isHot
+    };
+  }
+
+  async getNotifications(userId: string): Promise<UserNotificationItem[]> {
+    const notifications = await this.prisma.notification.findMany({
+      where: {
+        userNotifications: {
+          some: { userId }
+        }
+      },
+      orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
+      include: {
+        userNotifications: {
+          where: { userId },
+          select: { readAt: true },
+          take: 1
+        }
+      }
+    });
+
+    return notifications.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      content: notification.content,
+      createdAt: notification.createdAt.toISOString(),
+      pinned: notification.pinned,
+      unread: notification.userNotifications[0]?.readAt ? false : true
+    }));
+  }
+
+  async getMyProgress(userId: string): Promise<MyProgressOverview> {
+    const courses = await this.getCoursesWithUserProgress(userId);
+    const requiredCourses = courses.filter(
+      (course) => course.requirement === "required"
+    );
+    const completedRequiredCourses = requiredCourses.filter(
+      (course) => this.getCourseProgressFromLessons(course.lessons) >= 100
+    ).length;
+
+    const [progressRows, attempts] = await Promise.all([
+      this.prisma.learningProgress.findMany({
+        where: { userId },
+        select: { positionSeconds: true }
+      }),
+      this.prisma.examAttempt.findMany({
+        where: {
+          userId,
+          submittedAt: { not: null }
+        },
+        include: {
+          exam: {
+            select: { passScore: true }
+          }
+        }
+      })
+    ]);
+
+    const totalLearnSeconds = progressRows.reduce(
+      (sum, row) => sum + row.positionSeconds,
+      0
+    );
+    const validScores = attempts
+      .map((attempt) => attempt.score)
+      .filter((score): score is number => score !== null);
+    const averageExamScore =
+      validScores.length === 0
+        ? null
+        : Math.round(
+            validScores.reduce((sum, score) => sum + score, 0) / validScores.length
+          );
+    const passedExamCount = attempts.filter((attempt) => {
+      if (attempt.score === null) {
+        return false;
+      }
+      return attempt.score >= attempt.exam.passScore;
+    }).length;
+
+    return {
+      totalLearnSeconds,
+      completedCourseCount: courses.filter(
+        (course) => this.getCourseProgressFromLessons(course.lessons) >= 100
+      ).length,
+      requiredCourseCount: requiredCourses.length,
+      completionRate:
+        requiredCourses.length === 0
+          ? 0
+          : Math.round((completedRequiredCourses / requiredCourses.length) * 100),
+      averageExamScore,
+      passedExamCount,
+      totalExamCount: attempts.length
+    };
+  }
+
   async getExam(userId: string, examId: string): Promise<ExamDetail> {
     const exam = await this.getExamEntity(examId);
     const attempt = await this.getOrCreateAttempt(userId, examId, exam.durationMinutes);
@@ -435,6 +566,7 @@ export class LearningService {
 
   private async getCoursesWithUserProgress(userId: string): Promise<CourseWithLessons[]> {
     const courses = await this.prisma.course.findMany({
+      where: { status: "published" },
       orderBy: { id: "asc" },
       include: {
         lessons: {
@@ -480,6 +612,9 @@ export class LearningService {
     });
 
     if (!course) {
+      throw new NotFoundException(`Course ${courseId} not found`);
+    }
+    if (course.status !== "published") {
       throw new NotFoundException(`Course ${courseId} not found`);
     }
 

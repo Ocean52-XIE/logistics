@@ -1,37 +1,84 @@
+import Link from "next/link";
 import { AdminShell } from "@/components/prototype/admin-shell";
 import { StatMetricCard } from "@/components/prototype/ui";
-import { adminDashboardMetrics } from "@/lib/prototype-data";
+import { getAdminReportOverview } from "@/lib/api-server";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const report = await getAdminReportOverview();
+
+  const metrics = [
+    {
+      label: "在册员工",
+      value: report ? String(report.totalUsers) : "--",
+      hint: "可参与培训人数",
+      tone: "default" as const
+    },
+    {
+      label: "在学人数",
+      value: report ? String(report.activeLearners) : "--",
+      hint: "有学习或考试记录",
+      tone: "info" as const
+    },
+    {
+      label: "课程完成率",
+      value: report ? `${report.completionRate}%` : "--",
+      hint: "必修课程完成情况",
+      tone: "success" as const
+    },
+    {
+      label: "首考通过率",
+      value: report ? `${report.passRate}%` : "--",
+      hint: "已提交考试通过占比",
+      tone: "warning" as const
+    },
+    {
+      label: "已发布课程",
+      value: report ? String(report.publishedCourses) : "--",
+      hint: "当前对员工可见课程",
+      tone: "default" as const
+    },
+    {
+      label: "进行中计划",
+      value: report ? String(report.activePlans) : "--",
+      hint: "当前生效培训计划",
+      tone: "info" as const
+    }
+  ];
+
   return (
     <AdminShell
       activeHref="/admin"
       title="培训运营驾驶舱"
-      subtitle="按内容、计划、执行、分析组织后台信息，提升配置效率与管理可控性。"
+      subtitle="管理端已切换到真实报表数据，聚焦课程发布、计划指派与效果查看。"
     >
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {adminDashboardMetrics.map((metric) => (
+        {metrics.map((metric) => (
           <StatMetricCard key={metric.label} metric={metric} />
         ))}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/80 p-6">
-          <h2 className="text-2xl font-semibold text-white">风险组织排行</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="rounded-xl bg-slate-800 px-4 py-3 text-slate-200">1. 华北仓 · 完成率 69% · 逾期 8 人</div>
-            <div className="rounded-xl bg-slate-800 px-4 py-3 text-slate-200">2. 华中仓 · 完成率 71% · 逾期 5 人</div>
-            <div className="rounded-xl bg-slate-800 px-4 py-3 text-slate-200">3. 西南仓 · 完成率 73% · 逾期 4 人</div>
-          </div>
-        </article>
-        <article className="rounded-3xl border border-white/10 bg-slate-900/80 p-6">
-          <h2 className="text-2xl font-semibold text-white">高频失分题目</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="rounded-xl bg-slate-800 px-4 py-3 text-slate-200">异常件拍照留档时效要求（答对率 62%）</div>
-            <div className="rounded-xl bg-slate-800 px-4 py-3 text-slate-200">温控巡检执行频次（答对率 66%）</div>
-            <div className="rounded-xl bg-slate-800 px-4 py-3 text-slate-200">危险作业防护装备标准（答对率 68%）</div>
-          </div>
-        </article>
+      <section className="grid gap-5 md:grid-cols-3">
+        <Link
+          href="/admin/courses"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">课程管理</h2>
+          <p className="mt-2 text-sm text-slate-300">创建课程、查看状态、发布上线。</p>
+        </Link>
+        <Link
+          href="/admin/training-plans"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">培训计划</h2>
+          <p className="mt-2 text-sm text-slate-300">按员工批量指派课程并跟踪完成率。</p>
+        </Link>
+        <Link
+          href="/admin/reports"
+          className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 transition hover:border-brand-500/40"
+        >
+          <h2 className="text-xl font-semibold text-white">报表概览</h2>
+          <p className="mt-2 text-sm text-slate-300">查看课程完成率、考试通过率等核心指标。</p>
+        </Link>
       </section>
     </AdminShell>
   );

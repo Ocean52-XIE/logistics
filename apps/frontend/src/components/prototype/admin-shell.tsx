@@ -1,7 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import type { Route } from "next";
-import { adminNavGroups } from "@/lib/prototype-data";
+import { adminNavGroups } from "@/lib/nav-config";
 import { LogoutButton } from "./logout-button";
 
 interface AdminShellProps {
@@ -69,7 +69,14 @@ export function AdminShell({
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      {item.label}
+                      <span className="inline-flex items-center gap-2">
+                        {item.label}
+                        {item.upcoming ? (
+                          <span className="rounded-full border border-white/20 px-2 py-0.5 text-[11px] text-slate-300">
+                            即将上线
+                          </span>
+                        ) : null}
+                      </span>
                     </Link>
                   ))}
                 </div>

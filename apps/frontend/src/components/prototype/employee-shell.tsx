@@ -1,7 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import type { Route } from "next";
-import { employeeNav } from "@/lib/prototype-data";
+import { employeeNav } from "@/lib/nav-config";
 import { LogoutButton } from "./logout-button";
 
 interface EmployeeShellProps {

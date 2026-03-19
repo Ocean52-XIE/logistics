@@ -4,9 +4,13 @@ import type {
   CourseListItem,
   ExamDetail,
   ExamListItem,
+  KnowledgeArticleDetail,
+  KnowledgeArticleListItem,
+  MyProgressOverview,
   SaveExamDraftResponse,
   SaveLessonProgressResponse,
-  SubmitExamResponse
+  SubmitExamResponse,
+  UserNotificationItem
 } from "@logistics/shared";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { Roles } from "../auth/decorators/roles.decorator";
@@ -85,5 +89,31 @@ export class LearningController {
     @Body() body: SubmitExamDto
   ): Promise<SubmitExamResponse> {
     return this.learningService.submitExam(userId ?? "", examId, body);
+  }
+
+  @Get("knowledge-articles")
+  async getKnowledgeArticles(): Promise<KnowledgeArticleListItem[]> {
+    return this.learningService.getKnowledgeArticles();
+  }
+
+  @Get("knowledge-articles/:articleId")
+  async getKnowledgeArticle(
+    @Param("articleId") articleId: string
+  ): Promise<KnowledgeArticleDetail> {
+    return this.learningService.getKnowledgeArticle(articleId);
+  }
+
+  @Get("notifications")
+  async getNotifications(
+    @CurrentUser("id") userId: string | null
+  ): Promise<UserNotificationItem[]> {
+    return this.learningService.getNotifications(userId ?? "");
+  }
+
+  @Get("my-progress")
+  async getMyProgress(
+    @CurrentUser("id") userId: string | null
+  ): Promise<MyProgressOverview> {
+    return this.learningService.getMyProgress(userId ?? "");
   }
 }

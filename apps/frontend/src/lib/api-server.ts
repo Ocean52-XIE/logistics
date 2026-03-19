@@ -1,6 +1,9 @@
 import "server-only";
 import { cookies } from "next/headers";
 import type {
+  AdminCourseListItem,
+  AdminReportOverview,
+  AdminTrainingPlanListItem,
   CourseDetail,
   CourseListItem,
   DashboardSummary,
@@ -8,7 +11,12 @@ import type {
   ExamDetail,
   ExamListItem,
   HealthCheckResponse,
-  LessonDetail
+  KnowledgeArticleDetail,
+  KnowledgeArticleListItem,
+  LessonDetail,
+  MyProgressOverview,
+  UserProfile,
+  UserNotificationItem
 } from "@logistics/shared";
 import { ACCESS_TOKEN_COOKIE_KEY, API_BASE_URL } from "./auth-constants";
 
@@ -73,4 +81,36 @@ export function getExams() {
 
 export function getExamDetail(examId: string) {
   return fetchApi<ExamDetail>(`/exams/${examId}`);
+}
+
+export function getKnowledgeArticles() {
+  return fetchApi<KnowledgeArticleListItem[]>("/knowledge-articles");
+}
+
+export function getKnowledgeArticleDetail(articleId: string) {
+  return fetchApi<KnowledgeArticleDetail>(`/knowledge-articles/${articleId}`);
+}
+
+export function getNotifications() {
+  return fetchApi<UserNotificationItem[]>("/notifications");
+}
+
+export function getMyProgress() {
+  return fetchApi<MyProgressOverview>("/my-progress");
+}
+
+export function getAdminReportOverview() {
+  return fetchApi<AdminReportOverview>("/admin/reports/overview");
+}
+
+export function getAdminCourses() {
+  return fetchApi<AdminCourseListItem[]>("/admin/courses");
+}
+
+export function getAdminTrainingPlans() {
+  return fetchApi<AdminTrainingPlanListItem[]>("/admin/training-plans");
+}
+
+export function getAdminUsers() {
+  return fetchApi<UserProfile[]>("/admin/users");
 }

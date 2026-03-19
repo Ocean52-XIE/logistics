@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { EmployeeShell } from "@/components/prototype/employee-shell";
 import { StatusBadge } from "@/components/prototype/ui";
+import { getKnowledgeArticleDetail } from "@/lib/api-server";
 
 export default async function KnowledgeArticlePage({
   params
@@ -8,64 +10,68 @@ export default async function KnowledgeArticlePage({
   params: Promise<{ articleId: string }>;
 }) {
   const { articleId } = await params;
+  const article = await getKnowledgeArticleDetail(articleId);
+
+  if (!article) {
+    notFound();
+  }
 
   return (
     <EmployeeShell
       activeHref="/knowledge-base"
-      title={`SOP 详情 · ${articleId}`}
-      subtitle="支持文章目录、关键词高亮、关联课程跳转。"
-      primaryAction="收藏文章"
+      title={`SOP 详情 · ${article.title}`}
+      subtitle="内容由后端知识库实时返回，支持关联课程查看。"
+      primaryAction="返回列表"
     >
       <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
         <article className="rounded-3xl border border-[color:var(--line)] bg-white p-6">
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge text="异常处理" tone="warning" />
-            <StatusBadge text="最近更新 03-18" tone="info" />
+            <StatusBadge text={article.category} tone="warning" />
+            {article.isHot ? <StatusBadge text="热门" tone="info" /> : null}
           </div>
-          <h2 className="mt-3 text-3xl font-semibold text-slate-800">到仓异常件闭环处理流程</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
-            当包裹出现破损、条码模糊或信息不一致时，必须在 5 分钟内完成异常判定并进入闭环处理。
-            关键步骤包括登记、拍照、系统标记、流转复核与结果回填。
-          </p>
-          <div className="mt-5 space-y-3 text-sm leading-7 text-slate-700">
-            <p>
-              <strong>步骤 1：</strong>收集现场信息，拍摄至少 2 张清晰照片并关联工单。
-            </p>
-            <p>
-              <strong>步骤 2：</strong>按异常类型选择流程模板，进入对应处理分支。
-            </p>
-            <p>
-              <strong>步骤 3：</strong>处理完成后必须回写系统，确保可追溯。
-            </p>
+          <h2 className="mt-3 text-3xl font-semibold text-slate-800">{article.title}</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">{article.summary}</p>
+          <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+            {article.content}
           </div>
+          {article.tags.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {article.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </article>
 
         <div className="space-y-5">
           <article className="rounded-3xl border border-[color:var(--line)] bg-white p-6">
-            <h3 className="text-xl font-semibold text-slate-800">文章目录</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
-              <li className="rounded-xl bg-slate-50 px-3 py-2">1. 异常件定义</li>
-              <li className="rounded-xl bg-slate-50 px-3 py-2">2. 判定标准</li>
-              <li className="rounded-xl bg-slate-50 px-3 py-2">3. 处理闭环</li>
-              <li className="rounded-xl bg-slate-50 px-3 py-2">4. 常见误区</li>
-            </ul>
-          </article>
-          <article className="rounded-3xl border border-[color:var(--line)] bg-white p-6">
             <h3 className="text-xl font-semibold text-slate-800">关联课程</h3>
             <div className="mt-3 space-y-2 text-sm">
-              <Link
-                href="/courses/C-1088"
-                className="block rounded-xl border border-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-50"
-              >
-                异常件识别与处置 SOP
-              </Link>
-              <Link
-                href="/courses/C-1024"
-                className="block rounded-xl border border-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-50"
-              >
-                仓配一体全链路基础
-              </Link>
+              {article.relatedCourseIds.length === 0 ? (
+                <p className="rounded-xl bg-slate-50 px-3 py-2 text-slate-500">暂无关联课程</p>
+              ) : (
+                article.relatedCourseIds.map((courseId) => (
+                  <Link
+                    key={courseId}
+                    href={`/courses/${courseId}`}
+                    className="block rounded-xl border border-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-50"
+                  >
+                    {courseId}
+                  </Link>
+                ))
+              )}
             </div>
+          </article>
+          <article className="rounded-3xl border border-[color:var(--line)] bg-white p-6">
+            <h3 className="text-xl font-semibold text-slate-800">更新时间</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              {new Date(article.updatedAt).toLocaleString("zh-CN")}
+            </p>
           </article>
         </div>
       </section>

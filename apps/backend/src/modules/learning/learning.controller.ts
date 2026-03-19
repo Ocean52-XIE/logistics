@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Inject, Param, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  UseGuards
+} from "@nestjs/common";
 import type {
   CourseDetail,
   CourseListItem,
@@ -83,6 +92,7 @@ export class LearningController {
   }
 
   @Post("exams/:examId/submit")
+  @HttpCode(200)
   async submitExam(
     @CurrentUser("id") userId: string | null,
     @Param("examId") examId: string,

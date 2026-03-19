@@ -68,6 +68,7 @@ export function TrainingPlanPanel({
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">计划名称</span>
               <input
+                data-testid="training-plan-name"
                 className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
@@ -77,6 +78,7 @@ export function TrainingPlanPanel({
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">开始日期</span>
               <input
+                data-testid="training-plan-start"
                 type="date"
                 className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
                 value={startAt}
@@ -87,6 +89,7 @@ export function TrainingPlanPanel({
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">结束日期</span>
               <input
+                data-testid="training-plan-end"
                 type="date"
                 className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
                 value={endAt}
@@ -103,6 +106,7 @@ export function TrainingPlanPanel({
                 {courses.map((course) => (
                   <label key={course.id} className="flex items-center gap-2">
                     <input
+                      data-testid={`training-plan-course-${course.id}`}
                       type="checkbox"
                       checked={selectedCourseIds.includes(course.id)}
                       onChange={(event) => {
@@ -127,6 +131,7 @@ export function TrainingPlanPanel({
                 {users.map((user) => (
                   <label key={user.id} className="flex items-center gap-2">
                     <input
+                      data-testid={`training-plan-user-${user.id}`}
                       type="checkbox"
                       checked={selectedUserIds.includes(user.id)}
                       onChange={(event) => {
@@ -147,6 +152,7 @@ export function TrainingPlanPanel({
           </div>
 
           <button
+            data-testid="training-plan-submit"
             type="submit"
             disabled={isSubmitting}
             className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500 disabled:opacity-60"

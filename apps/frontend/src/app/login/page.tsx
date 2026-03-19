@@ -15,15 +15,20 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [username, setUsername] = useState("employee1");
   const [password, setPassword] = useState("123456");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const canSubmit = useMemo(
-    () => !isSubmitting && !isCheckingSession,
-    [isSubmitting, isCheckingSession]
+    () => isHydrated && !isSubmitting,
+    [isHydrated, isSubmitting]
   );
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,24 +146,26 @@ export default function LoginPage() {
             <label className="block">
               <span className="mb-2 block text-sm text-slate-600">用户名</span>
               <input
+                data-testid="login-username"
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-brand-500"
                 placeholder="例如 employee1"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 autoComplete="username"
-                disabled={!canSubmit}
+                disabled={!isHydrated || isSubmitting}
               />
             </label>
             <label className="block">
               <span className="mb-2 block text-sm text-slate-600">密码</span>
               <input
+                data-testid="login-password"
                 type="password"
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-brand-500"
                 placeholder="请输入密码"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
-                disabled={!canSubmit}
+                disabled={!isHydrated || isSubmitting}
               />
             </label>
             {errorMessage ? (
@@ -167,12 +174,13 @@ export default function LoginPage() {
               </p>
             ) : null}
             <button
+              data-testid="login-submit"
               type="submit"
               className="w-full rounded-xl bg-brand-500 px-4 py-3 font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!canSubmit}
             >
               {isCheckingSession
-                ? "正在检查登录状态..."
+                ? "登录平台"
                 : isSubmitting
                   ? "登录中..."
                   : "登录平台"}

@@ -179,7 +179,10 @@ export function ExamSessionPanel({ exam }: { exam: ExamDetail }) {
         </div>
 
         {submitResult ? (
-          <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <div
+            data-testid="exam-submit-result"
+            className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
+          >
             <p className="text-lg font-semibold text-emerald-700">
               得分 {submitResult.score} 分（{submitResult.passed ? "通过" : "未通过"}）
             </p>
@@ -202,6 +205,7 @@ export function ExamSessionPanel({ exam }: { exam: ExamDetail }) {
                 return (
                   <label
                     key={option.id}
+                    data-testid={`exam-option-${activeQuestion.id}-${option.id}`}
                     className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 ${
                       checked
                         ? "border-brand-200 bg-brand-50"
@@ -264,6 +268,7 @@ export function ExamSessionPanel({ exam }: { exam: ExamDetail }) {
             手动暂存
           </button>
           <button
+            data-testid="exam-submit"
             type="button"
             className="rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
             onClick={() => void onSubmit()}

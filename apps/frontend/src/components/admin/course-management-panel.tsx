@@ -93,6 +93,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">课程名称</span>
             <input
+              data-testid="admin-course-title"
               className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -102,6 +103,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">课程分类</span>
             <input
+              data-testid="admin-course-category"
               className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               value={category}
               onChange={(event) => setCategory(event.target.value)}
@@ -111,6 +113,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">时长（分钟）</span>
             <input
+              data-testid="admin-course-duration"
               type="number"
               min={1}
               className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
@@ -122,6 +125,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">课程属性</span>
             <select
+              data-testid="admin-course-requirement"
               className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               value={requirement}
               onChange={(event) =>
@@ -135,6 +139,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           <label className="block">
             <span className="mb-1 block text-xs text-slate-400">截止日期</span>
             <input
+              data-testid="admin-course-due-date"
               type="date"
               className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               value={dueDate}
@@ -145,6 +150,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           <label className="block md:col-span-2">
             <span className="mb-1 block text-xs text-slate-400">课程简介</span>
             <textarea
+              data-testid="admin-course-description"
               rows={3}
               className="w-full rounded-xl border border-white/20 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               value={description}
@@ -154,6 +160,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
           </label>
           <div className="md:col-span-2">
             <button
+              data-testid="admin-course-create"
               type="submit"
               disabled={isSubmitting}
               className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500 disabled:opacity-60"
@@ -197,6 +204,7 @@ export function CourseManagementPanel({ initialCourses }: CourseManagementPanelP
                   <td className="py-2">
                     {course.status === "draft" ? (
                       <button
+                        data-testid={`admin-course-publish-${course.id}`}
                         type="button"
                         className="rounded-lg border border-brand-400 px-2.5 py-1 text-xs text-brand-300 hover:bg-brand-500/20"
                         disabled={publishingCourseId === course.id}

@@ -2,11 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  workers: 1,
   fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: "http://localhost:3000",
     trace: "on-first-retry"
   },
   projects: [
@@ -18,14 +19,14 @@ export default defineConfig({
   webServer: [
     {
       command: "npm run start:test --prefix ../backend",
-      url: "http://127.0.0.1:4000/api/v1/health",
-      reuseExistingServer: !process.env.CI,
+      url: "http://localhost:4000/api/v1/health",
+      reuseExistingServer: false,
       timeout: 120_000
     },
     {
-      command: "npm run dev",
-      url: "http://127.0.0.1:3000/login",
-      reuseExistingServer: !process.env.CI,
+      command: "npm run start",
+      url: "http://localhost:3000/login",
+      reuseExistingServer: false,
       timeout: 120_000
     }
   ]

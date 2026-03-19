@@ -541,8 +541,11 @@ export class LearningService {
       new Set(wrongQuestions.map((item) => item.knowledgeTag))
     ).slice(0, 3);
 
-    await this.prisma.examAttempt.update({
-      where: { id: attempt.id },
+    const updateResult = await this.prisma.examAttempt.updateMany({
+      where: {
+        id: attempt.id,
+        submittedAt: null
+      },
       data: {
         answers,
         currentQuestion: Math.max(1, totalQuestions),
@@ -552,6 +555,10 @@ export class LearningService {
         score
       }
     });
+
+    if (updateResult.count === 0) {
+      throw new BadRequestException("Exam already submitted");
+    }
 
     return {
       score,

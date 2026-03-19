@@ -156,6 +156,7 @@ export function LessonLearningPanel({ lesson }: { lesson: LessonDetail }) {
             立即保存
           </button>
           <button
+            data-testid="lesson-mark-complete"
             type="button"
             className="rounded-xl bg-accent-500 px-3 py-2 text-sm font-semibold text-white hover:bg-accent-600"
             onClick={() => void persistProgress({ force: true, markCompleted: true })}

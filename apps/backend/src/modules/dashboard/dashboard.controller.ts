@@ -1,7 +1,13 @@
-import { Controller, Get, Inject } from "@nestjs/common";
+import { Controller, Get, Inject, UseGuards } from "@nestjs/common";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RolesGuard } from "../auth/guards/roles.guard";
 import { DashboardService } from "./dashboard.service";
 
 @Controller("dashboard")
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("employee", "admin")
 export class DashboardController {
   constructor(
     @Inject(DashboardService)
@@ -9,12 +15,12 @@ export class DashboardController {
   ) {}
 
   @Get("summary")
-  getSummary() {
-    return this.dashboardService.getSummary();
+  getSummary(@CurrentUser("id") userId: string | null) {
+    return this.dashboardService.getSummary(userId ?? "");
   }
 
   @Get("tasks")
-  getTasks() {
-    return this.dashboardService.getTasks();
+  getTasks(@CurrentUser("id") userId: string | null) {
+    return this.dashboardService.getTasks(userId ?? "");
   }
 }

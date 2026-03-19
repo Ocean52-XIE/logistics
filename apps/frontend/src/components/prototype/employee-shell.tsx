@@ -2,6 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import type { Route } from "next";
 import { employeeNav } from "@/lib/prototype-data";
+import { LogoutButton } from "./logout-button";
 
 interface EmployeeShellProps {
   activeHref: string;
@@ -24,7 +25,9 @@ export function EmployeeShell({
         <header className="rounded-[32px] border border-[color:var(--line)] bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-6 text-white shadow-panel">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-white/70">Employee Learning Workspace</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-white/70">
+                Employee Learning Workspace
+              </p>
               <h1 className="mt-2 text-3xl font-semibold lg:text-4xl">{title}</h1>
               <p className="mt-3 max-w-2xl text-sm text-white/85 lg:text-base">{subtitle}</p>
             </div>
@@ -37,12 +40,10 @@ export function EmployeeShell({
                   {primaryAction}
                 </button>
               ) : null}
-              <Link
-                href="/login"
+              <LogoutButton
                 className="rounded-2xl border border-white/30 px-4 py-2.5 text-sm font-medium text-white/95 transition hover:bg-white/10"
-              >
-                切换账号
-              </Link>
+                label="退出登录"
+              />
             </div>
           </div>
         </header>
@@ -67,7 +68,9 @@ export function EmployeeShell({
             </nav>
             <div className="mt-5 rounded-2xl bg-[color:var(--surface-muted)] p-4 text-sm text-slate-600">
               <p className="font-semibold text-slate-700">今日目标</p>
-              <p className="mt-2">完成 1 门必修课 + 1 场随堂测验，保持学习连续性。</p>
+              <p className="mt-2">
+                完成 1 门必修课程 + 1 场随堂测验，保持学习连续性。
+              </p>
             </div>
           </aside>
 

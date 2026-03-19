@@ -7,6 +7,18 @@ export interface UserProfile {
   organizationName: string;
 }
 
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  tokenType: "Bearer";
+  expiresIn: number;
+  user: UserProfile;
+}
+
 export interface DashboardTask {
   id: string;
   title: string;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import type { Route } from "next";
 import { adminNavGroups } from "@/lib/prototype-data";
+import { LogoutButton } from "./logout-button";
 
 interface AdminShellProps {
   activeHref: string;
@@ -22,7 +23,9 @@ export function AdminShell({
         <header className="rounded-[30px] border border-white/10 bg-gradient-to-r from-slate-900 via-slate-900 to-brand-950 px-6 py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Admin Operations Hub</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+                Admin Operations Hub
+              </p>
               <h1 className="mt-2 text-3xl font-semibold lg:text-4xl">{title}</h1>
               <p className="mt-3 max-w-2xl text-sm text-slate-300 lg:text-base">{subtitle}</p>
             </div>
@@ -39,6 +42,10 @@ export function AdminShell({
               >
                 返回员工端
               </Link>
+              <LogoutButton
+                className="rounded-2xl border border-rose-300/40 px-4 py-2.5 text-sm font-medium text-rose-100 transition hover:bg-rose-400/20"
+                label="退出登录"
+              />
             </div>
           </div>
         </header>

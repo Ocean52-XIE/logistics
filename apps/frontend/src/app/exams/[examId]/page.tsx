@@ -1,6 +1,6 @@
 import { EmployeeShell } from "@/components/prototype/employee-shell";
 import { ExamSessionPanel } from "@/components/prototype/exam-session-panel";
-import { getExamDetail } from "@/lib/api";
+import { getExamDetail } from "@/lib/api-server";
 import type { ExamDetail } from "@logistics/shared";
 
 const fallbackExam: ExamDetail = {

@@ -5,7 +5,7 @@ import {
   notifications,
   requiredCourses
 } from "@/lib/prototype-data";
-import { getCourses, getDashboardSummary, getDashboardTasks } from "@/lib/api";
+import { getCourses, getDashboardSummary, getDashboardTasks } from "@/lib/api-server";
 import type {
   CourseListItem,
   DashboardSummary,

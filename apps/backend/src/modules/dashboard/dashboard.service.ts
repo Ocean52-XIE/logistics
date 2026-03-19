@@ -9,11 +9,11 @@ export class DashboardService {
     private readonly learningService: LearningService
   ) {}
 
-  getSummary(): DashboardSummary {
-    return this.learningService.getDashboardSummary();
+  getSummary(userId: string): Promise<DashboardSummary> {
+    return this.learningService.getDashboardSummary(userId);
   }
 
-  getTasks(): DashboardTask[] {
-    return this.learningService.getDashboardTasks();
+  getTasks(userId: string): Promise<DashboardTask[]> {
+    return this.learningService.getDashboardTasks(userId);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Post, UseGuards } from "@nestjs/common";
 import type {
   CourseDetail,
   CourseListItem,
@@ -8,12 +8,18 @@ import type {
   SaveLessonProgressResponse,
   SubmitExamResponse
 } from "@logistics/shared";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RolesGuard } from "../auth/guards/roles.guard";
 import { SaveExamDraftDto } from "./dto/save-exam-draft.dto";
 import { SaveLessonProgressDto } from "./dto/save-lesson-progress.dto";
 import { SubmitExamDto } from "./dto/submit-exam.dto";
 import { LearningService } from "./learning.service";
 
 @Controller()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("employee", "admin")
 export class LearningController {
   constructor(
     @Inject(LearningService)
@@ -21,51 +27,63 @@ export class LearningController {
   ) {}
 
   @Get("courses")
-  getCourses(): CourseListItem[] {
-    return this.learningService.getCourses();
+  async getCourses(@CurrentUser("id") userId: string | null): Promise<CourseListItem[]> {
+    return this.learningService.getCourses(userId ?? "");
   }
 
   @Get("courses/:courseId")
-  getCourse(@Param("courseId") courseId: string): CourseDetail {
-    return this.learningService.getCourse(courseId);
+  async getCourse(
+    @CurrentUser("id") userId: string | null,
+    @Param("courseId") courseId: string
+  ): Promise<CourseDetail> {
+    return this.learningService.getCourse(userId ?? "", courseId);
   }
 
   @Get("lessons/:lessonId")
-  getLesson(@Param("lessonId") lessonId: string) {
-    return this.learningService.getLesson(lessonId);
+  async getLesson(
+    @CurrentUser("id") userId: string | null,
+    @Param("lessonId") lessonId: string
+  ) {
+    return this.learningService.getLesson(userId ?? "", lessonId);
   }
 
   @Post("lessons/:lessonId/progress")
-  saveLessonProgress(
+  async saveLessonProgress(
+    @CurrentUser("id") userId: string | null,
     @Param("lessonId") lessonId: string,
     @Body() body: SaveLessonProgressDto
-  ): SaveLessonProgressResponse {
-    return this.learningService.saveLessonProgress(lessonId, body);
+  ): Promise<SaveLessonProgressResponse> {
+    return this.learningService.saveLessonProgress(userId ?? "", lessonId, body);
   }
 
   @Get("exams")
-  getExams(): ExamListItem[] {
-    return this.learningService.getExams();
+  async getExams(@CurrentUser("id") userId: string | null): Promise<ExamListItem[]> {
+    return this.learningService.getExams(userId ?? "");
   }
 
   @Get("exams/:examId")
-  getExam(@Param("examId") examId: string): ExamDetail {
-    return this.learningService.getExam(examId);
+  async getExam(
+    @CurrentUser("id") userId: string | null,
+    @Param("examId") examId: string
+  ): Promise<ExamDetail> {
+    return this.learningService.getExam(userId ?? "", examId);
   }
 
   @Post("exams/:examId/draft")
-  saveExamDraft(
+  async saveExamDraft(
+    @CurrentUser("id") userId: string | null,
     @Param("examId") examId: string,
     @Body() body: SaveExamDraftDto
-  ): SaveExamDraftResponse {
-    return this.learningService.saveExamDraft(examId, body);
+  ): Promise<SaveExamDraftResponse> {
+    return this.learningService.saveExamDraft(userId ?? "", examId, body);
   }
 
   @Post("exams/:examId/submit")
-  submitExam(
+  async submitExam(
+    @CurrentUser("id") userId: string | null,
     @Param("examId") examId: string,
     @Body() body: SubmitExamDto
-  ): SubmitExamResponse {
-    return this.learningService.submitExam(examId, body);
+  ): Promise<SubmitExamResponse> {
+    return this.learningService.submitExam(userId ?? "", examId, body);
   }
 }

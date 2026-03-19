@@ -1,3 +1,5 @@
+import "server-only";
+import { cookies } from "next/headers";
 import type {
   CourseDetail,
   CourseListItem,
@@ -6,15 +8,9 @@ import type {
   ExamDetail,
   ExamListItem,
   HealthCheckResponse,
-  LessonDetail,
-  SaveExamDraftRequest,
-  SaveExamDraftResponse,
-  SaveLessonProgressRequest,
-  SaveLessonProgressResponse,
-  SubmitExamRequest,
-  SubmitExamResponse
+  LessonDetail
 } from "@logistics/shared";
-import { API_BASE_URL, getBrowserAccessToken } from "./auth-token";
+import { ACCESS_TOKEN_COOKIE_KEY, API_BASE_URL } from "./auth-constants";
 
 const API_ACCESS_TOKEN = process.env.NEXT_PUBLIC_API_ACCESS_TOKEN;
 
@@ -24,9 +20,9 @@ async function fetchApi<T>(
 ): Promise<T | null> {
   try {
     const headers = new Headers(init?.headers);
-    const token =
-      (typeof window !== "undefined" ? getBrowserAccessToken() : null) ??
-      API_ACCESS_TOKEN;
+    const cookieStore = await cookies();
+    const cookieToken = cookieStore.get(ACCESS_TOKEN_COOKIE_KEY)?.value;
+    const token = cookieToken ?? API_ACCESS_TOKEN;
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -45,16 +41,6 @@ async function fetchApi<T>(
   } catch {
     return null;
   }
-}
-
-function postJson<T>(path: string, payload: unknown): Promise<T | null> {
-  return fetchApi<T>(path, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
 }
 
 export function getHealthStatus() {
@@ -81,25 +67,10 @@ export function getLessonDetail(lessonId: string) {
   return fetchApi<LessonDetail>(`/lessons/${lessonId}`);
 }
 
-export function saveLessonProgress(
-  lessonId: string,
-  payload: SaveLessonProgressRequest
-) {
-  return postJson<SaveLessonProgressResponse>(`/lessons/${lessonId}/progress`, payload);
-}
-
 export function getExams() {
   return fetchApi<ExamListItem[]>("/exams");
 }
 
 export function getExamDetail(examId: string) {
   return fetchApi<ExamDetail>(`/exams/${examId}`);
-}
-
-export function saveExamDraft(examId: string, payload: SaveExamDraftRequest) {
-  return postJson<SaveExamDraftResponse>(`/exams/${examId}/draft`, payload);
-}
-
-export function submitExam(examId: string, payload: SubmitExamRequest) {
-  return postJson<SubmitExamResponse>(`/exams/${examId}/submit`, payload);
 }

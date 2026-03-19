@@ -1,6 +1,6 @@
 import { EmployeeShell } from "@/components/prototype/employee-shell";
 import { LessonLearningPanel } from "@/components/prototype/lesson-learning-panel";
-import { getLessonDetail } from "@/lib/api";
+import { getLessonDetail } from "@/lib/api-server";
 import type { LessonDetail } from "@logistics/shared";
 
 const fallbackLesson: LessonDetail = {

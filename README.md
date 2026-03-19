@@ -21,7 +21,21 @@ docs/         产品与技术设计文档
 npm install
 ```
 
-2. 启动前后端
+2. 配置环境变量
+
+```bash
+cp .env.example .env
+cp apps/backend/.env.example apps/backend/.env
+```
+
+3. 初始化数据库（首次）
+
+```bash
+npm run prisma:migrate -w @logistics/backend -- --name init
+npm run db:seed -w @logistics/backend
+```
+
+4. 启动前后端
 
 ```bash
 npm run dev
@@ -39,4 +53,26 @@ npm run dev
 - `npm run dev:backend`
 - `npm run build`
 - `npm run typecheck`
+- `npm run prisma:migrate -w @logistics/backend -- --name <migration-name>`
+- `npm run db:seed -w @logistics/backend`
 
+## 默认账号（seed）
+
+- 员工：`employee1 / 123456`
+- 管理员：`admin1 / 123456`
+
+## 鉴权调试
+
+1. 获取 access token：
+
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"employee1","password":"123456"}'
+```
+
+2. 如果希望前端直接读取真实后端数据，可把返回的 token 填到 `.env`：
+
+```bash
+NEXT_PUBLIC_API_ACCESS_TOKEN=<your-access-token>
+```

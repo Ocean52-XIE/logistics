@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { EmployeeShell } from "@/components/prototype/employee-shell";
 import { ProgressCard, RoleTag, StatusBadge } from "@/components/prototype/ui";
-import { getCourseDetail } from "@/lib/api";
+import { getCourseDetail } from "@/lib/api-server";
 import type { CourseDetail } from "@logistics/shared";
 
 const fallbackCourse: CourseDetail = {

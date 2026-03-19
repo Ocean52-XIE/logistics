@@ -1,6 +1,6 @@
 import { EmployeeShell } from "@/components/prototype/employee-shell";
 import { CourseCard, FilterBar } from "@/components/prototype/ui";
-import { getCourses } from "@/lib/api";
+import { getCourses } from "@/lib/api-server";
 import { requiredCourses } from "@/lib/prototype-data";
 import type { CourseListItem } from "@logistics/shared";
 

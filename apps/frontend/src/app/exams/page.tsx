@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { EmployeeShell } from "@/components/prototype/employee-shell";
 import { FilterBar, StatusBadge } from "@/components/prototype/ui";
-import { getExams } from "@/lib/api";
+import { getExams } from "@/lib/api-server";
 import { examList } from "@/lib/prototype-data";
 import type { ExamListItem } from "@logistics/shared";
 

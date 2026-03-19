@@ -11,10 +11,13 @@
     "dev:backend": "npm run start:dev -w @logistics/backend",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "build": "npm run build -w @logistics/shared && npm run build -w @logistics/backend && npm run build -w @logistics/frontend",
-    "typecheck": "npm run typecheck -w @logistics/shared && npm run typecheck -w @logistics/backend && npm run typecheck -w @logistics/frontend"
+    "typecheck": "npm run typecheck -w @logistics/shared && npm run typecheck -w @logistics/backend && npm run typecheck -w @logistics/frontend",
+    "test:backend": "npm run prisma:deploy -w @logistics/backend && npm run db:seed -w @logistics/backend && npm run test -w @logistics/backend",
+    "test:frontend": "npm run db:seed -w @logistics/backend && npm run test:e2e -w @logistics/frontend",
+    "test": "npm run test:backend && npm run test:frontend"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "concurrently": "^9.1.2"
   }
 }
-

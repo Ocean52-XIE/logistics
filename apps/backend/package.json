@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "start:dev": "tsx watch -r dotenv/config src/main.ts",
+    "start:test": "tsx -r dotenv/config src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node -r dotenv/config dist/apps/backend/src/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test src/test/**/*.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
@@ -35,8 +37,5 @@
     "prisma": "^6.15.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
-  },
-  "prisma": {
-    "seed": "tsx -r dotenv/config prisma/seed.ts"
   }
 }

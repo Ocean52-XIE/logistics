@@ -1,0 +1,20 @@
+{
+  "name": "logistics-training-platform",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev -w @logistics/frontend",
+    "dev:backend": "npm run start:dev -w @logistics/backend",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "build": "npm run build -w @logistics/shared && npm run build -w @logistics/backend && npm run build -w @logistics/frontend",
+    "typecheck": "npm run typecheck -w @logistics/shared && npm run typecheck -w @logistics/backend && npm run typecheck -w @logistics/frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
+
